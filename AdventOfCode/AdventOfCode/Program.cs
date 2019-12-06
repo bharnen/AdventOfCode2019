@@ -17,10 +17,8 @@ namespace AdventOfCode
             //Day 2
             Console.WriteLine(daySeparator(2));
             OpCodeProcessor opCodeProcessor = new OpCodeProcessor();
-            opCodeProcessor.displaySegments();
             opCodeProcessor.process();
-            opCodeProcessor.displaySegments();
-
+            opCodeProcessor.processToNounAndVerb(19690720);
 
 
         }

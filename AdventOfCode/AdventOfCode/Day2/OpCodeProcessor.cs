@@ -34,13 +34,47 @@ namespace AdventOfCode.Day2
         const int MULTIPLY = 2;
         const int END = 99;
 
-
+        //Part 1
         public void process()
         {
-            for (int i=0; i<opCodeSegments.Count; i++)
+            var copy = _getSegmentCopy();
+            process(copy);
+            displaySegments(copy);
+        }
+        public void process(List<List<int>> segements)
+        {
+            for (int i = 0; i < segements.Count; i++)
             {
-                if (processStep(i) <= 0) return;
+                if (processStep(i, segements) <= 0) return;
             }
+        }
+
+        //Part 2
+        public void processToNounAndVerb(int desiredResult)
+        { 
+            int noun = 0;
+            int verb = 0;
+            while ( (noun < 100) || (verb < 100) )
+            {
+                var segmentCopy = _getSegmentCopy();
+                segmentCopy[0][1] = noun;
+                segmentCopy[0][2] = verb;
+                process(segmentCopy);
+                if (segmentCopy[0][0] == desiredResult)
+                {
+                    break;
+                }
+                if (noun == 100)
+                {
+                    noun = 0;
+                    verb++;
+                }
+                else
+                {
+                    noun++;
+                }
+            }
+            Console.WriteLine($"Noun: {noun}, Verb: {verb}");
         }
 
         public int processStep(int step)
@@ -67,20 +101,49 @@ namespace AdventOfCode.Day2
                 default:
                     return -1;
             }
+        }
+        public int processStep(int step, List<List<int>> segments)
+        {
+            var segment = segments.ElementAt(step);
+            var operation = segment.ElementAt(0);
+            if (operation == END) return 0;
 
+            var position1 = segment.ElementAt(1);
+            var position2 = segment.ElementAt(2);
+            var position3 = segment.ElementAt(3);
 
+            var firstNumber = segments.ElementAt(position1 / SEGMENT_LENGTH).ElementAt(position1 % SEGMENT_LENGTH);
+            var secondNumber = segments.ElementAt(position2 / SEGMENT_LENGTH).ElementAt(position2 % SEGMENT_LENGTH);
+
+            switch (operation)
+            {
+                case ADD:
+                    segments.ElementAt(position3 / SEGMENT_LENGTH)[(position3 % SEGMENT_LENGTH)] = firstNumber + secondNumber;
+                    return 1;
+                case MULTIPLY:
+                    segments.ElementAt(position3 / SEGMENT_LENGTH)[(position3 % SEGMENT_LENGTH)] = firstNumber * secondNumber;
+                    return 1;
+                default:
+                    return -1;
+            }
         }
 
 
-        public void displaySegments()
+        public void displaySegments(List<List<int>> segments)
         {
-            foreach (List<int> segment in opCodeSegments)
+            foreach (List<int> segment in segments)
             {
                 segment.ForEach(i => Console.Write($"{i} "));
                 Console.WriteLine();
             }
         }
 
+        private List<List<int>> _getSegmentCopy()
+        {
+            var opCodeSegmentsCopy = new List<List<int>>();
+            opCodeSegments.ForEach(list => opCodeSegmentsCopy.Add(new List<int>(list)));
+            return opCodeSegmentsCopy;
+        }
 
 
 
