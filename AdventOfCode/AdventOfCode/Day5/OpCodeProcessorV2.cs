@@ -42,6 +42,26 @@ namespace AdventOfCode.Day5
                     _handleOutput(opCodes, instructionPointer[0], parameterModes);
                     instructionPointer[0] += 2;
                     return;
+                case JUMP_IF_TRUE:
+                    if (!_jumpIfTrue(opCodes, instructionPointer, parameterModes))
+                    {
+                        instructionPointer[0] += 3;
+                    }
+                    return;
+                case JUMP_IF_FALSE:
+                    if (!_jumpIfFalse(opCodes, instructionPointer, parameterModes))
+                    {
+                        instructionPointer[0] += 3;
+                    }
+                    return;
+                case LESS_THAN:
+                    _lessThan(opCodes, instructionPointer, parameterModes);
+                    instructionPointer[0] += 4;
+                    return;
+                case EQUALS:
+                    _equals(opCodes, instructionPointer, parameterModes);
+                    instructionPointer[0] += 4;
+                    return;
                 default:
                     return;
             }
@@ -49,24 +69,77 @@ namespace AdventOfCode.Day5
 
         private void _add(List<int> opCodes, int instructionPointer, List<int> paramModes)
         {
-            var one = _getParam(opCodes, instructionPointer, 1, paramModes.Count > 0 ? paramModes[0] : POSITION_MODE);
-            var two = _getParam(opCodes, instructionPointer, 2, paramModes.Count > 1 ? paramModes[1] : POSITION_MODE);
-            var resultLocation = opCodes[instructionPointer + 3];
-            if (one == null || two == null) return;
-            opCodes[resultLocation] = one.Value + two.Value;
+            var paramOne = _getParam(opCodes, instructionPointer, 1, paramModes.Count > 0 ? paramModes[0] : POSITION_MODE);
+            var paramTwo = _getParam(opCodes, instructionPointer, 2, paramModes.Count > 1 ? paramModes[1] : POSITION_MODE);
+            var paramThree = opCodes[instructionPointer + 3];
+            if (paramOne == null || paramTwo == null) return;
+            opCodes[paramThree] = paramOne.Value + paramTwo.Value;
         }
         private void _multiply(List<int> opCodes, int instructionPointer, List<int> paramModes)
         {
-            var one = _getParam(opCodes, instructionPointer, 1, paramModes.Count > 0 ? paramModes[0] : POSITION_MODE);
-            var two = _getParam(opCodes, instructionPointer, 2, paramModes.Count > 1 ? paramModes[1] : POSITION_MODE);
-            var resultLocation = opCodes[instructionPointer + 3];
-            if (one == null || two == null)
+            var paramOne = _getParam(opCodes, instructionPointer, 1, paramModes.Count > 0 ? paramModes[0] : POSITION_MODE);
+            var paramTwo = _getParam(opCodes, instructionPointer, 2, paramModes.Count > 1 ? paramModes[1] : POSITION_MODE);
+            var paramThree = opCodes[instructionPointer + 3];
+            if (paramOne == null || paramTwo == null)
             {
                 return;
             }
-            opCodes[resultLocation] = one.Value * two.Value;
+            opCodes[paramThree] = paramOne.Value * paramTwo.Value;
         }
-
+        private bool _jumpIfTrue(List<int> opCodes, int[] instructionPointer, List<int> paramModes)
+        {
+            var paramOne = _getParam(opCodes, instructionPointer[0], 1, paramModes.Count > 0 ? paramModes[0] : POSITION_MODE);
+            if (paramOne != 0)
+            {
+                var paramTwo = _getParam(opCodes, instructionPointer[0], 2, paramModes.Count > 1 ? paramModes[1] : POSITION_MODE);
+                instructionPointer[0] = paramTwo.Value;
+                return true;
+            }
+            return false;
+        }
+        private bool _jumpIfFalse(List<int> opCodes, int[] instructionPointer, List<int> paramModes)
+        {
+            var paramOne = _getParam(opCodes, instructionPointer[0], 1, paramModes.Count > 0 ? paramModes[0] : POSITION_MODE);
+            if (paramOne == 0)
+            {
+                var paramTwo = _getParam(opCodes, instructionPointer[0], 2, paramModes.Count > 1 ? paramModes[1] : POSITION_MODE);
+                instructionPointer[0] = paramTwo.Value;
+                return true;
+            }
+            return false;
+        }
+        private bool _lessThan(List<int> opCodes, int[] instructionPointer, List<int> paramModes)
+        {
+            var paramOne = _getParam(opCodes, instructionPointer[0], 1, paramModes.Count > 0 ? paramModes[0] : POSITION_MODE);
+            var paramTwo = _getParam(opCodes, instructionPointer[0], 2, paramModes.Count > 1 ? paramModes[1] : POSITION_MODE);
+            var paramThree = _getParam(opCodes, instructionPointer[0], 3, IMMEDIATE_MODE);
+            if (paramOne < paramTwo)
+            {
+                opCodes[paramThree.Value] = 1;
+                return true;
+            }
+            else
+            {
+                opCodes[paramThree.Value] = 0;
+            }
+            return false;
+        }
+        private bool _equals(List<int> opCodes, int[] instructionPointer, List<int> paramModes)
+        {
+            var paramOne = _getParam(opCodes, instructionPointer[0], 1, paramModes.Count > 0 ? paramModes[0] : POSITION_MODE);
+            var paramTwo = _getParam(opCodes, instructionPointer[0], 2, paramModes.Count > 1 ? paramModes[1] : POSITION_MODE);
+            var paramThree = _getParam(opCodes, instructionPointer[0], 3, IMMEDIATE_MODE);
+            if (paramOne == paramTwo)
+            {
+                opCodes[paramThree.Value] = 1;
+                return true;
+            }
+            else
+            {
+                opCodes[paramThree.Value] = 0;
+            }
+            return false;
+        }
         protected int? _getParam(List<int> opCodes, int instructionPointer, int index, int mode)
         {
             switch (mode)
